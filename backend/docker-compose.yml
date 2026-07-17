@@ -1,0 +1,49 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: locker
+      POSTGRES_PASSWORD: lockerpass
+      POSTGRES_DB: paid_media_locker
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U locker -d paid_media_locker"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://locker:lockerpass@postgres:5432/paid_media_locker?schema=public
+      PORT: 4000
+      NODE_ENV: production
+      JWT_SECRET: ${JWT_SECRET:-dev-jwt-secret-change-me}
+      JWT_EXPIRES_IN: 7d
+      SIGNED_URL_SECRET: ${SIGNED_URL_SECRET:-dev-signed-url-secret-change-me}
+      SIGNED_URL_TTL_SECONDS: 90
+      STARTING_WALLET_BALANCE: 100
+      STORAGE_ORIGINALS_DIR: /app/storage/originals
+      STORAGE_PREVIEWS_DIR: /app/storage/previews
+      DEMO_EMAIL: demo@lockerapp.test
+      DEMO_PASSWORD: Demo@1234
+    ports:
+      - "4000:4000"
+    volumes:
+      - media_originals:/app/storage/originals
+      - media_previews:/app/storage/previews
+    command: >
+      sh -c "npx prisma migrate deploy && node dist/server.js"
+
+volumes:
+  pg_data:
+  media_originals:
+  media_previews:

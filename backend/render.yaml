@@ -1,0 +1,48 @@
+services:
+  - type: web
+    name: paid-media-locker-backend
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: paid-media-locker-db
+          property: connectionString
+      - key: PORT
+        value: "4000"
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: SIGNED_URL_SECRET
+        generateValue: true
+      - key: SIGNED_URL_TTL_SECONDS
+        value: "90"
+      - key: STARTING_WALLET_BALANCE
+        value: "100"
+      - key: STORAGE_ORIGINALS_DIR
+        value: /app/storage/originals
+      - key: STORAGE_PREVIEWS_DIR
+        value: /app/storage/previews
+      - key: DEMO_EMAIL
+        value: demo@lockerapp.test
+      - key: DEMO_PASSWORD
+        value: Demo@1234
+    preDeployCommand: npx prisma migrate deploy
+    # NOTE: Render's free instance type has an ephemeral filesystem and does not
+    # support attached persistent disks (those require a paid plan). Uploaded
+    # media therefore does NOT survive a redeploy/restart on the free tier --
+    # acceptable for this demo, but flagged in README.md as a known limitation
+    # with S3/R2 as the documented production fix (StorageService is already
+    # an interface for exactly that swap).
+
+databases:
+  - name: paid-media-locker-db
+    plan: free
+    databaseName: paid_media_locker
+    user: locker

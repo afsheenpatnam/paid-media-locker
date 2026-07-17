@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  passwordHash  String
+  displayName   String
+  walletBalance Int      @default(0)
+  createdAt     DateTime @default(now())
+
+  media         Media[]
+  purchases     Purchase[]
+  transactions  Transaction[]
+  auditLogs     AuditLog[]
+}
+
+model Media {
+  id           String   @id @default(uuid())
+  ownerId      String
+  owner        User     @relation(fields: [ownerId], references: [id])
+  title        String
+  description  String?
+  unlockPrice  Int
+  originalKey  String
+  previewKey   String
+  mimeType     String
+  createdAt    DateTime @default(now())
+
+  purchases    Purchase[]
+  auditLogs    AuditLog[]
+
+  @@index([ownerId])
+}
+
+model Purchase {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  mediaId     String
+  media       Media    @relation(fields: [mediaId], references: [id])
+  pricePaid   Int
+  purchasedAt DateTime @default(now())
+
+  transaction Transaction?
+
+  @@unique([userId, mediaId])
+}
+
+enum TransactionType {
+  SEED
+  DEBIT
+  CREDIT
+}
+
+model Transaction {
+  id                String          @id @default(uuid())
+  userId            String
+  user              User            @relation(fields: [userId], references: [id])
+  type              TransactionType
+  amount            Int
+  balanceAfter      Int
+  relatedPurchaseId String?         @unique
+  relatedPurchase   Purchase?       @relation(fields: [relatedPurchaseId], references: [id])
+  createdAt         DateTime        @default(now())
+
+  @@index([userId])
+}
+
+enum AuditAction {
+  UNLOCK_SUCCESS
+  UNLOCK_FAIL_INSUFFICIENT_BALANCE
+  UNLOCK_FAIL_ALREADY_OWNED
+  UNLOCK_FAIL_NOT_FOUND
+  ORIGINAL_ACCESS_GRANTED
+  ORIGINAL_ACCESS_DENIED
+}
+
+model AuditLog {
+  id        String      @id @default(uuid())
+  userId    String?
+  user      User?       @relation(fields: [userId], references: [id])
+  mediaId   String?
+  media     Media?      @relation(fields: [mediaId], references: [id])
+  action    AuditAction
+  ip        String?
+  createdAt DateTime    @default(now())
+
+  @@index([userId])
+  @@index([mediaId])
+}

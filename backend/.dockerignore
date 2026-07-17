@@ -1,0 +1,10 @@
+node_modules
+dist
+.env
+.pgdata
+storage/originals/*
+storage/previews/*
+!storage/originals/.gitkeep
+!storage/previews/.gitkeep
+tests
+*.log
