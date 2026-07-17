@@ -34,4 +34,4 @@ COPY prisma ./prisma
 RUN mkdir -p storage/originals storage/previews
 
 EXPOSE 4000
-CMD ["node", "dist/server.js"]
+CMD npx prisma migrate deploy && node dist/server.js

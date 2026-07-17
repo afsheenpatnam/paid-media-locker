@@ -6,7 +6,6 @@ services:
     dockerContext: ./backend
     plan: free
     healthCheckPath: /health
-    dockerCommand: sh -c "npx prisma migrate deploy && node dist/server.js"
     envVars:
       - key: DATABASE_URL
         fromDatabase:
