@@ -6,6 +6,7 @@ services:
     dockerContext: ./backend
     plan: free
     healthCheckPath: /health
+    dockerCommand: sh -c "npx prisma migrate deploy && node dist/server.js"
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -33,7 +34,6 @@ services:
         value: demo@lockerapp.test
       - key: DEMO_PASSWORD
         value: Demo@1234
-    preDeployCommand: npx prisma migrate deploy
 
 databases:
   - name: paid-media-locker-db
