@@ -2,8 +2,8 @@ services:
   - type: web
     name: paid-media-locker-backend
     runtime: docker
-    dockerfilePath: ./Dockerfile
-    dockerContext: .
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
     plan: free
     healthCheckPath: /health
     envVars:
@@ -34,12 +34,6 @@ services:
       - key: DEMO_PASSWORD
         value: Demo@1234
     preDeployCommand: npx prisma migrate deploy
-    # NOTE: Render's free instance type has an ephemeral filesystem and does not
-    # support attached persistent disks (those require a paid plan). Uploaded
-    # media therefore does NOT survive a redeploy/restart on the free tier --
-    # acceptable for this demo, but flagged in README.md as a known limitation
-    # with S3/R2 as the documented production fix (StorageService is already
-    # an interface for exactly that swap).
 
 databases:
   - name: paid-media-locker-db
