@@ -30,6 +30,8 @@ RUN npm install --omit=dev
 COPY --from=base /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=base /app/dist ./dist
 COPY prisma ./prisma
+COPY tsconfig.json ./
+COPY src ./src
 
 RUN mkdir -p storage/originals storage/previews
 
