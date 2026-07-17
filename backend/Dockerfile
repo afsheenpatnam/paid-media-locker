@@ -36,4 +36,4 @@ COPY src ./src
 RUN mkdir -p storage/originals storage/previews
 
 EXPOSE 4000
-CMD npx prisma migrate deploy && node dist/server.js
+CMD npx prisma migrate deploy && npm run seed && node dist/server.js
